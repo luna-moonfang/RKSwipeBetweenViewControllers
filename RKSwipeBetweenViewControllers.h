@@ -162,4 +162,20 @@
 @property (nonatomic, strong)UIView *navigationView;
 @property (nonatomic, strong)NSArray *buttonText;
 
+// customizeable item
+@property (nonatomic, strong) UIColor *sbColor; // selection bar color
+@property (nonatomic, assign) CGFloat sbAlpha; // selection bar alpha
+@property (nonatomic, assign) CGFloat msbAlpha; // moving selector bar alpha
+@property (nonatomic, assign) CGFloat animationSpeed; // selector bar animation speed
+// selector bar further customization
+@property (nonatomic, assign) CGFloat selectorBounceBuffer;
+@property (nonatomic, assign) CGFloat selectorYBuffer;
+@property (nonatomic, assign) CGFloat selectorHeight;
+@property (nonatomic, strong) NSArray<UIColor *> *buttonColors; // button colors
+// further button customization
+@property (nonatomic, assign) CGFloat buttonXBuffer;
+@property (nonatomic, assign) CGFloat buttonYBuffer;
+@property (nonatomic, assign) CGFloat buttonHeight;
+@property (nonatomic, strong) UIColor *barTint; // bar tint color
+
 @end

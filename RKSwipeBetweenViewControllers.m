@@ -51,7 +51,8 @@ CGFloat X_OFFSET = 8.0; //%%% for some reason there's a little bit of a glitchy 
 {
     [super viewDidLoad];
 
-    self.navigationBar.barTintColor = [UIColor colorWithRed:0.01 green:0.05 blue:0.06 alpha:1]; //%%% bartint
+//    self.navigationBar.barTintColor = [UIColor colorWithRed:0.01 green:0.05 blue:0.06 alpha:1]; //%%% bartint
+    self.navigationBar.barTintColor = _barTint;
     self.navigationBar.translucent = NO;
     viewControllerArray = [[NSMutableArray alloc]init];
     self.currentPageIndex = 0;
@@ -82,7 +83,8 @@ CGFloat X_OFFSET = 8.0; //%%% for some reason there's a little bit of a glitchy 
         [navigationView addSubview:button];
         
         button.tag = i; //%%% IMPORTANT: if you make your own custom buttons, you have to tag them appropriately
-        button.backgroundColor = [UIColor colorWithRed:0.03 green:0.07 blue:0.08 alpha:1];//%%% buttoncolors
+//        button.backgroundColor = [UIColor colorWithRed:0.03 green:0.07 blue:0.08 alpha:1];//%%% buttoncolors
+        button.backgroundColor = _buttonColors[i];
         
         [button addTarget:self action:@selector(tapSegmentButtonAction:) forControlEvents:UIControlEventTouchUpInside];
         
@@ -126,8 +128,10 @@ CGFloat X_OFFSET = 8.0; //%%% for some reason there's a little bit of a glitchy 
 //%%% sets up the selection bar under the buttons on the navigation bar
 -(void)setupSelector {
     selectionBar = [[UIView alloc]initWithFrame:CGRectMake(X_BUFFER-X_OFFSET, SELECTOR_Y_BUFFER,(self.view.frame.size.width-2*X_BUFFER)/[viewControllerArray count], SELECTOR_HEIGHT)];
-    selectionBar.backgroundColor = [UIColor greenColor]; //%%% sbcolor
-    selectionBar.alpha = 0.8; //%%% sbalpha
+//    selectionBar.backgroundColor = [UIColor greenColor]; //%%% sbcolor
+//    selectionBar.alpha = 0.8; //%%% sbalpha
+    selectionBar.backgroundColor = _sbColor;
+    selectionBar.alpha = _sbAlpha;
     [navigationView addSubview:selectionBar];
 }
 
