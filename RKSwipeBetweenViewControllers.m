@@ -10,7 +10,9 @@
 #import "RKSwipeBetweenViewControllers.h"
 
 //%%% customizeable button attributes
+// 左右边距
 CGFloat X_BUFFER = 0.0; //%%% the number of pixels on either side of the segment
+// 上边距
 CGFloat Y_BUFFER = 14.0; //%%% number of pixels on top of the segment
 CGFloat HEIGHT = 30.0; //%%% height of the segment
 
@@ -20,13 +22,18 @@ CGFloat ANIMATION_SPEED = 0.2; //%%% the number of seconds it takes to complete 
 CGFloat SELECTOR_Y_BUFFER = 40.0; //%%% the y-value of the bar that shows what page you are on (0 is the top)
 CGFloat SELECTOR_HEIGHT = 4.0; //%%% thickness of the selector bar
 
+// 正常设好按钮栏后第一个按钮会向右偏8个点, 所以需要这个offset, 可能是titleView不能占满整个navBar?
 CGFloat X_OFFSET = 8.0; //%%% for some reason there's a little bit of a glitchy offset.  I'm going to look for a better workaround in the future
 
 @interface RKSwipeBetweenViewControllers ()
 
+// ???
 @property (nonatomic) UIScrollView *pageScrollView;
+// 当前页index
 @property (nonatomic) NSInteger currentPageIndex;
+// 是否正在滚动, 开始滚动时 YES, 停止加速度时 NO
 @property (nonatomic) BOOL isPageScrollingFlag; //%%% prevents scrolling / segment tap crash
+// 是否已出现, 用于只执行一次
 @property (nonatomic) BOOL hasAppearedFlag; //%%% prevents reloading (maintains state)
 
 @end
@@ -51,8 +58,10 @@ CGFloat X_OFFSET = 8.0; //%%% for some reason there's a little bit of a glitchy 
 {
     [super viewDidLoad];
 
+    // 导航栏, 即按钮栏tintColor和透明度
     self.navigationBar.barTintColor = [UIColor colorWithRed:0.01 green:0.05 blue:0.06 alpha:1]; //%%% bartint
     self.navigationBar.translucent = NO;
+    // 初始化各属性
     viewControllerArray = [[NSMutableArray alloc]init];
     self.currentPageIndex = 0;
     self.isPageScrollingFlag = NO;
@@ -69,7 +78,7 @@ CGFloat X_OFFSET = 8.0; //%%% for some reason there's a little bit of a glitchy 
 
 //%%% sets up the tabs using a loop.  You can take apart the loop to customize individual buttons, but remember to tag the buttons.  (button.tag=0 and the second button.tag=1, etc)
 -(void)setupSegmentButtons {
-    navigationView = [[UIView alloc]initWithFrame:CGRectMake(0,0,self.view.frame.size.width,self.navigationBar.frame.size.height)];
+    navigationView = [[UIView alloc]initWithFrame:CGRectMake(0,0,self.view.frame.size.width,self.navigationBar.frame.size.height)]; // 按钮栏宽度同屏幕, 高度44
     
     NSInteger numControllers = [viewControllerArray count];
     
@@ -78,6 +87,7 @@ CGFloat X_OFFSET = 8.0; //%%% for some reason there's a little bit of a glitchy 
     }
     
     for (int i = 0; i<numControllers; i++) {
+        // 不看X_OFFSET, 看实际效果, 按钮的frame = (0, 14, self.view.frame.size.width/numControllers, 30)
         UIButton *button = [[UIButton alloc]initWithFrame:CGRectMake(X_BUFFER+i*(self.view.frame.size.width-2*X_BUFFER)/numControllers-X_OFFSET, Y_BUFFER, (self.view.frame.size.width-2*X_BUFFER)/numControllers, HEIGHT)];
         [navigationView addSubview:button];
         
@@ -125,6 +135,7 @@ CGFloat X_OFFSET = 8.0; //%%% for some reason there's a little bit of a glitchy 
 
 //%%% sets up the selection bar under the buttons on the navigation bar
 -(void)setupSelector {
+    // 实际效果, 下划线frame = (0, 40, 和按钮等宽, 4)
     selectionBar = [[UIView alloc]initWithFrame:CGRectMake(X_BUFFER-X_OFFSET, SELECTOR_Y_BUFFER,(self.view.frame.size.width-2*X_BUFFER)/[viewControllerArray count], SELECTOR_HEIGHT)];
     selectionBar.backgroundColor = [UIColor greenColor]; //%%% sbcolor
     selectionBar.alpha = 0.8; //%%% sbalpha
@@ -136,7 +147,10 @@ CGFloat X_OFFSET = 8.0; //%%% for some reason there's a little bit of a glitchy 
 #pragma mark Setup
 
 -(void)viewWillAppear:(BOOL)animated {
+    //FIXME: call super
+    
     if (!self.hasAppearedFlag) {
+        // 这两个方法只在第一次出现时执行一次
         [self setupPageViewController];
         [self setupSegmentButtons];
         self.hasAppearedFlag = YES;
@@ -145,11 +159,11 @@ CGFloat X_OFFSET = 8.0; //%%% for some reason there's a little bit of a glitchy 
 
 //%%% generic setup stuff for a pageview controller.  Sets up the scrolling style and delegate for the controller
 -(void)setupPageViewController {
-    pageController = (UIPageViewController*)self.topViewController;
+    pageController = (UIPageViewController*)self.topViewController; // 第一次执行时, nav里只有一个root vc是page vc
     pageController.delegate = self;
     pageController.dataSource = self;
-    [pageController setViewControllers:@[[viewControllerArray objectAtIndex:0]] direction:UIPageViewControllerNavigationDirectionForward animated:YES completion:nil];
-    [self syncScrollView];
+    [pageController setViewControllers:@[[viewControllerArray objectAtIndex:0]] direction:UIPageViewControllerNavigationDirectionForward animated:YES completion:nil]; // page vc设置内容vc
+    [self syncScrollView]; // 接管page vc的scrollView设置self.pageScrollView并成为 scrollView 的 delegate
 }
 
 //%%% this allows us to get information back from the scrollview, namely the coordinate information that we can link to the selection bar.
@@ -185,12 +199,13 @@ CGFloat X_OFFSET = 8.0; //%%% for some reason there's a little bit of a glitchy 
             
             //%%% scroll through all the objects between the two points
             for (int i = (int)tempIndex+1; i<=button.tag; i++) {
+                // 通过循环设 page vc 的内容vc 的方法滚动
                 [pageController setViewControllers:@[[viewControllerArray objectAtIndex:i]] direction:UIPageViewControllerNavigationDirectionForward animated:YES completion:^(BOOL complete){
                     
                     //%%% if the action finishes scrolling (i.e. the user doesn't stop it in the middle),
                     //then it updates the page that it's currently on
                     if (complete) {
-                        [weakSelf updateCurrentPageIndex:i];
+                        [weakSelf updateCurrentPageIndex:i]; // 滚动完更新当前 index
                     }
                 }];
             }
@@ -223,8 +238,9 @@ CGFloat X_OFFSET = 8.0; //%%% for some reason there's a little bit of a glitchy 
     //%%% checks to see what page you are on and adjusts the xCoor accordingly.
     //i.e. if you're on the second page, it makes sure that the bar starts from the frame.origin.x of the
     //second tab instead of the beginning
-    NSInteger xCoor = X_BUFFER+selectionBar.frame.size.width*self.currentPageIndex-X_OFFSET;
+    NSInteger xCoor = X_BUFFER+selectionBar.frame.size.width*self.currentPageIndex-X_OFFSET; // 下划线当前的 x
     
+    // 用当前位置 - 滑动过的距离, 往右滑时下划线往相反的方向走, 所以是减. 其他不变
     selectionBar.frame = CGRectMake(xCoor-xFromCenter/[viewControllerArray count], selectionBar.frame.origin.y, selectionBar.frame.size.width, selectionBar.frame.size.height);
 }
 
@@ -267,7 +283,8 @@ CGFloat X_OFFSET = 8.0; //%%% for some reason there's a little bit of a glitchy 
 
 -(void)pageViewController:(UIPageViewController *)pageViewController didFinishAnimating:(BOOL)finished previousViewControllers:(NSArray *)previousViewControllers transitionCompleted:(BOOL)completed {
     if (completed) {
-        self.currentPageIndex = [viewControllerArray indexOfObject:[pageViewController.viewControllers lastObject]];
+        // 点击按钮切页面时不触发
+        self.currentPageIndex = [viewControllerArray indexOfObject:[pageViewController.viewControllers lastObject]]; // 此时 page vc的 viewControllers 只有一个 vc
     }
 }
 

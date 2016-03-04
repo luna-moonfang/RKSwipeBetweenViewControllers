@@ -149,17 +149,18 @@
 
 #import <UIKit/UIKit.h>
 
+// RKSwipeBetweenViewControllersDelegate协议为空, 未使用, 可根据需要添加delegate方法
 @protocol RKSwipeBetweenViewControllersDelegate <NSObject>
 
 @end
 
 @interface RKSwipeBetweenViewControllers : UINavigationController <UIPageViewControllerDelegate,UIPageViewControllerDataSource,UIScrollViewDelegate>
 
-@property (nonatomic, strong) NSMutableArray *viewControllerArray;
-@property (nonatomic, weak) id<RKSwipeBetweenViewControllersDelegate> navDelegate;
-@property (nonatomic, strong) UIView *selectionBar;
-@property (nonatomic, strong)UIPageViewController *pageController;
-@property (nonatomic, strong)UIView *navigationView;
-@property (nonatomic, strong)NSArray *buttonText;
+@property (nonatomic, strong) NSMutableArray *viewControllerArray;                  // vc数组
+@property (nonatomic, weak) id<RKSwipeBetweenViewControllersDelegate> navDelegate;  // delegate
+@property (nonatomic, strong) UIView *selectionBar;                                 // 选中项的下划线
+@property (nonatomic, strong)UIPageViewController *pageController;                  // root vc
+@property (nonatomic, strong)UIView *navigationView;                                // 按钮+下划线所在view
+@property (nonatomic, strong)NSArray *buttonText;                                   // 按钮文字的数组
 
 @end
